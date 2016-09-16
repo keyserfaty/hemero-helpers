@@ -249,17 +249,17 @@ const extractEquals = (a, b) =>
  * For example you could have:
  * ['cristina', 'cristina kirchner', 'CFK']
  *
- * All these there words all virtually the same and for each of these
+ * All these three words are virtually the same and for each of these
  * groups you have a percentage. This percentage represents how
  * important are this words to the main subject of the article.
- * You could have for example a 21.44 (this is a big number).
+ * You could have for example a 21.44 (this is a big percentage).
  *
  * On the other hand you will have the other article from a different journal
  * and the same data: ['cristina', 'cristina kirchner', 'CFK'] maybe in a different
  * order or with some additions. You could have for instance
  * ['cristina', 'cristina kirchner', 'CFK', 'cristina fernandez de kirchner'] and with
  * this list you will also have how important this word (or group of words)
- * are for these other article. You could have a 18.22.
+ * are for this other article. You could have a 18.22.
  *
  * What the function does is it takes this two values (18.22 and 21.44) and it
  * subtracts on an other an then returns the absolute value of these operation.
@@ -268,7 +268,7 @@ const extractEquals = (a, b) =>
  * It will do this for all group of words you have. So you finally will end up with
  * a group of numbers: 3.22, 2.33, 8.22.
  * It will then take the biggest one and will subtract 100 to it and the return its absolute
- * number. In this case: 100 - 8.22 = 91.78 and this is the number it will return.
+ * value. In this case: 100 - 8.22 = 91.78 and this is the number it will return.
  *
  * This number is suppose to be the similarity index of both articles.
  *

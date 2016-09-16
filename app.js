@@ -134,6 +134,11 @@ const getNames = names =>
  */
 const getNamesCount = names => getWordsCount(getNames(names));
 
+/**
+ * Remove repeated words. Return the one that includes all the rest
+ * and has the greatest number and remove all repeated ones.
+ * @param names: Array
+ */
 const reduceNames = names =>
   getNamesCount(names)
     .sort((curr, prev) => curr.name.length - prev.name.length)
@@ -176,7 +181,7 @@ const getRelevantNames = names =>
 
 const getNumbers = names =>
   names
-    // Checks if the first character is a number to bring dates and hours
+    // WEIRD: Checks if the first character is a number to bring dates and hours
     .filter(e => !isNaN(Number(e[0])));
 
 const getNumbersCount = numbers => getWordsCount(getNumbers(numbers));
@@ -206,15 +211,43 @@ const appearancePercentage = names =>
       return res;
     }, []);
 
+/**
+ *
+ * @param list: Array
+ * @param n: Number
+ */
 const filterMostRelevant = (list, n) =>
   appearancePercentage(list)
     .sort((curr, prev) => curr.percentage - prev.percentage)
     .reverse()
     .filter((e, i) => i < n);
 
-console.log(filterMostRelevant(getRelevantNames(wordsP), 3))
+/**
+ * Return words that are equal into an array with those two elements
+ * @param a: Array
+ * @param b: Array
+ */
+const extractEquals = (a, b) =>
+  a
+    .reduce((res, e) => {
+      const isPresent = (e1, e2) => e1.name === e2.name || e2.synonyms.indexOf(e1.name) !== -1 || e1.synonyms.indexOf(e2.name) !== -1;
+      const result = [
+        b.filter(elem => isPresent(e, elem))[0] || null,
+        e
+      ];
+
+      res.push(result);
+      return res;
+    }, []);
+
+// const buildSimilarityIndex = list =>
+//   list.
+
+const pagina = filterMostRelevant(getRelevantNames(wordsP), 3);
+const LN = filterMostRelevant(getRelevantNames(wordsLN), 3);
+console.log(extractEquals(pagina, LN))
 console.log('-------------')
-console.log(filterMostRelevant(getRelevantNames(wordsLN), 3))
+// console.log(extractEquals(filterMostRelevant(getRelevantNames(wordsLN), 3)))
 
 // console.log(JSON.stringify(
 //   appearancePercentage(getRelevantNames(wordsP)), null, 2

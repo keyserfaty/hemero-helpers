@@ -73,6 +73,7 @@ const parsedWords = news =>
     .join()
     .split(new RegExp('\"|,|-|›| '))
     .map(e => e.trim())
+    // BUG: It should remove `.` and convert any word following a period to lowercase
     .map(e => e.includes('.') ? e.toLowerCase() : e)
     .filter(e => e.length);
 

@@ -52,12 +52,16 @@ const buildObject = arr =>
  */
 const parsedWords = news =>
   Object.keys(news)
-    .map(e => news[e])
+    // WEIRD: I'm changing the subtitle to lowercase to avoid mistakes
+    .map(e => e === 'subtitle' ? news[e].toLowerCase() : news[e])
     .join()
     .split(new RegExp('\"|,|-|›| '))
     .map(e => e.trim())
     .map(e => e.includes('.') ? e[1].toLocaleLowerCase() + e.slice(2) : e)
     .filter(e => e.length);
+
+const wordsP = parsedWords(test1);
+const wordsLN = parsedWords(test2);
 
 ////////////////////////////////////////////////////////////////////////
 // Word counting operations ////////////////////////////////////////////
@@ -81,8 +85,7 @@ const getWordsCount = names =>
 
       return res;
     }, {}))
-    .sort((a, b) => a.count > b.count)
-    .reverse();
+    .sort((a, b) => a.count - b.count);
 
 /**
  * Return an array of words when the is more than
@@ -94,8 +97,7 @@ const getRelevantWordsCount = names =>
   names
     .filter(elem => elem.count !== 1)
     .filter(e => skippedWords.indexOf(e.name) === -1)
-    .sort((a, b) => a.count > b.count)
-    .reverse();
+    .sort((a, b) => a.count - b.count);
 
 ////////////////////////////////////////////////////////////////////////
 // Proper nouns counting operations ////////////////////////////////////
@@ -130,33 +132,43 @@ const getNames = names =>
  * the number of appearances of each
  * @param names: Array
  */
-const getNamesCount = names =>
-  names
-    .reduce((res, e) => {
-      const includesName = Object.keys(res).filter(key => key.includes(e) || key === e);
+const getNamesCount = names => getWordsCount(getNames(names));
 
-      if ((res.hasOwnProperty(e) || includesName) && includesName.length > 0) {
-        res[e] = includesName.length + 1;
-      }
+const reduceNames = names =>
+  getNamesCount(names)
+    .sort((curr, prev) => curr.name.length - prev.name.length)
+    .reduce((res, e, i, arr) => {
+      const wordCount = arr.reduce((sum, elem) => elem.name.includes(e.name)
+          ? sum + elem.count
+          : sum, 0);
 
-      if (!res.hasOwnProperty(e)) {
-        res[e] = 1;
-      }
+      const wordSynonyms =
+        arr
+          .filter(elem => elem.name.includes(e.name))
+          .filter(elem => elem.name !== e.name)
+          .map(elem => elem.name);
 
+      const result = {
+        name: e.name,
+        synonyms: wordSynonyms,
+        count: wordCount
+      };
+
+      res.push(result);
       return res;
-    }, {});
+    }, [])
+    .sort((curr, prev) => curr.name.length - prev.name.length)
+    .filter((e, i, arr) => !arr.some(elem => elem.synonyms.indexOf(e.name) !== -1));
 
 /**
- * Receives an object with the form [word]: [word count]
- * and returns an array of words with more than
+ * Returns an array of words with more than
  * one appearance.
  * @param names
  */
 const getRelevantNames = names =>
-  buildArray(names)
+  reduceNames(names)
     .filter(elem => elem.count !== 1)
-    .sort((a, b) => a.count > b.count)
-    .reverse();
+    .sort((a, b) => a.count - b.count);
 
 ////////////////////////////////////////////////////////////////////////
 // Numbers counting operations /////////////////////////////////////////
@@ -167,12 +179,7 @@ const getNumbers = names =>
     // Checks if the first character is a number to bring dates and hours
     .filter(e => !isNaN(Number(e[0])));
 
-const getNumbersCount = numbers => getWordsCount(numbers);
-
-const wordsP = parsedWords(test1);
-const wordsLN = parsedWords(test2);
-console.log(getNumbersCount(getNumbers(wordsP)))
-console.log(getNumbersCount(getNumbers(wordsLN)))
+const getNumbersCount = numbers => getWordsCount(getNumbers(numbers));
 
 ////////////////////////////////////////////////////////////////////////
 // Analysis operations /////////////////////////////////////////////////
@@ -185,29 +192,37 @@ console.log(getNumbersCount(getNumbers(wordsLN)))
  * @param names
  */
 const appearancePercentage = names =>
-  buildArray(names)
+  names
     .reduce((res, elem) => {
-      const total = buildArray(names).reduce((sum, e) => sum + e['count'], 0);
+      const total = names.reduce((sum, e) => sum + e['count'], 0);
 
-      res[elem.name] = {
+      const e = {
+        name: elem.name,
+        synonyms: elem.synonyms,
         percentage: Number((elem.count / total * 100).toFixed(2))
       };
-      
+
+      res.push(e);
       return res;
-    }, {});
+    }, []);
 
+const filterMostRelevant = (list, n) =>
+  appearancePercentage(list)
+    .sort((curr, prev) => curr.percentage - prev.percentage)
+    .reverse()
+    .filter((e, i) => i < n);
 
+console.log(filterMostRelevant(getRelevantNames(wordsP), 3))
+console.log('-------------')
+console.log(filterMostRelevant(getRelevantNames(wordsLN), 3))
 
-const namesPagina = getNamesCount(getNames(parsedWords(test1)));
-const relevantNamesCountPagina = getRelevantNames(namesPagina);
+// console.log(JSON.stringify(
+//   appearancePercentage(getRelevantNames(wordsP)), null, 2
+// ));
+// console.log(JSON.stringify(
+//   appearancePercentage(getRelevantNames(wordsLN)), null, 2
+// ));
 
-const namesLN = getNames(parsedWords(test2));
-const relevantNamesCountLN = getRelevantNames(getNamesCount(namesLN));
+// console.log(JSON.stringify(getRelevantNames(wordsP), null, 2));
+// console.log(JSON.stringify(getRelevantNames(wordsLN), null, 2));
 
-// console.log(JSON.stringify(relevantNamesCountPagina, null, 2))
-// console.log(JSON.stringify(relevantNamesCountLN, null, 2))
-
-// console.log(appearancePercentage(relevantNamesCountPagina));
-// console.log(appearancePercentage(relevantNamesCountLN));
-
-// need to filter repeated words like mi -> mi sangre, lodoño -> lopez lodoño

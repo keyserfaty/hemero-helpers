@@ -244,25 +244,25 @@ const extractEquals = (a, b) =>
 
 /**
  * Its kind of a lying function but here's what it does:
- * Up to this point you have an array with n elements.
- * Each element is an array of words that refer to the same word.
- * For example you could have:
- * ['cristina', 'cristina kirchner', 'CFK']
+ * Up to this point you have an array with n pair of objects.
+ * Each object of a pair contains an array of words that refer to the same word.
+ * For example you could have: ['cristina', 'cristina kirchner', 'CFK']
  *
  * All these three words are virtually the same and for each of these
- * groups you have a percentage. This percentage represents how
- * important are this words to the main subject of the article.
+ * groups you will have a percentage. This percentage represents how
+ * important this words are to the main subject of the article.
  * You could have for example a 21.44 (this is a big percentage).
  *
- * On the other hand you will have the other article from a different journal
- * and the same data: ['cristina', 'cristina kirchner', 'CFK'] maybe in a different
+ * On the other hand you will have an other object. This object will contain
+ * the same data: ['cristina', 'cristina kirchner', 'CFK'] but for
+ * an other article from a different journal. This words might be in a different
  * order or with some additions. You could have for instance
  * ['cristina', 'cristina kirchner', 'CFK', 'cristina fernandez de kirchner'] and with
- * this list you will also have how important this word (or group of words)
- * are for this other article. You could have a 18.22.
+ * this list you will also have a percentage of how important this group of words
+ * is for this other article. You could have a 18.22.
  *
  * What the function does is it takes this two values (18.22 and 21.44) and it
- * subtracts on an other an then returns the absolute value of these operation.
+ * subtracts one an other an then returns the absolute value of these operation.
  * In this case this would be: 3.22.
  *
  * It will do this for all group of words you have. So you finally will end up with

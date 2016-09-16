@@ -17,33 +17,7 @@ const test2 = {
 ////////////////////////////////////////////////////////////////////////
 
 // Constants
-const upperList = [
-  'A',
-  'B',
-  'C',
-  'D',
-  'E',
-  'F',
-  'G',
-  'H',
-  'I',
-  'J',
-  'K',
-  'L',
-  'M',
-  'N',
-  'O',
-  'P',
-  'Q',
-  'R',
-  'S',
-  'T',
-  'U',
-  'V',
-  'W',
-  'X',
-  'Y',
-  'Z'];
+const upperList = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 const skippedWords = ["ante", "según", "las", "que", "la", "de", "en", "o", "pudo", "desde", "habían", "el", "del", "fue", "con", "que", "su", "un", "yo", "la", "los", "una", "quien", "y", "al", "de", "para", "se", "por", "haber", "sido", "le", "esa", "qué", "fueron", "aquí", "allí", "ahí", "allá", "acá", "arriba", "abajo", "cerca", "lejos", "delante", "detrás", "encima", "debajo", "enfrente", "atrás", "alrededor", "antes", "después", "luego", "pronto", "tarde", "temprano", "todavía", "aún", "ya", "ayer", "hoy", "mañana", "siempre", "nunca", "jamás", "próximamente", "prontamente", "anoche", "enseguida", "ahora", "mientras", "anteriormente", "bien", "mal", "regular", "despacio", "deprisa", "así", "tal", "como", "aprisa", "adrede", "peor", "mejor", "fielmente", "estupendamente", "fácilmente", "negativamente", "responsablemente", "muy", "poco", "mucho", "bastante", "más", "menos", "algo", "demasiado", "casi", "solo", "solamente", "tan", "tanto", "todo", "nada", "aproximadamente", "sí", "también", "cierto", "ciertamente", "efectivamente", "claro", "exacto", "obvio", "verdaderamente", "seguramente", "asimismo", "etc", "no", "jamás", "nunca", "tampoco", "primeramente", "últimamente", "quizás", "quizá", "acaso", "probablemente", "posiblemente", "seguramente", "tal", "vez", "puede", "puede", "ser", "a", "lo", "mejor", "cuándo", "cómo", "cuánto", "dónde", "solo", "solamente", "aún", "inclusive", "además", "únicamente", "incluso", "mismamente", "propiamente", "precisamente", "concretamente", "viceversa", "contrariamente", "siquiera", "consecuentemente"];
 
 // Helpers
@@ -185,6 +159,22 @@ const getRelevantNames = names =>
     .reverse();
 
 ////////////////////////////////////////////////////////////////////////
+// Numbers counting operations /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+const getNumbers = names =>
+  names
+    // Checks if the first character is a number to bring dates and hours
+    .filter(e => !isNaN(Number(e[0])));
+
+const getNumbersCount = numbers => getWordsCount(numbers);
+
+const wordsP = parsedWords(test1);
+const wordsLN = parsedWords(test2);
+console.log(getNumbersCount(getNumbers(wordsP)))
+console.log(getNumbersCount(getNumbers(wordsLN)))
+
+////////////////////////////////////////////////////////////////////////
 // Analysis operations /////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
@@ -210,8 +200,6 @@ const appearancePercentage = names =>
 
 const namesPagina = getNamesCount(getNames(parsedWords(test1)));
 const relevantNamesCountPagina = getRelevantNames(namesPagina);
-
-console.log(relevantNamesCountPagina)
 
 const namesLN = getNames(parsedWords(test2));
 const relevantNamesCountLN = getRelevantNames(getNamesCount(namesLN));

@@ -12,6 +12,7 @@ const test2 = {
   "paper": "lanacion"
 };
 
+//Constants
 const upperList = [
   'A',
   'B',
@@ -39,9 +40,37 @@ const upperList = [
   'X',
   'Y',
   'Z'];
+const skippedWords = ["ante", "según", "las", "que", "la", "de", "en", "o", "pudo", "desde", "habían", "el", "del", "fue", "con", "que", "su", "un", "yo", "la", "los", "una", "quien", "y", "al", "de", "para", "se", "por", "haber", "sido", "le", "esa", "qué", "fueron", "aquí", "allí", "ahí", "allá", "acá", "arriba", "abajo", "cerca", "lejos", "delante", "detrás", "encima", "debajo", "enfrente", "atrás", "alrededor", "antes", "después", "luego", "pronto", "tarde", "temprano", "todavía", "aún", "ya", "ayer", "hoy", "mañana", "siempre", "nunca", "jamás", "próximamente", "prontamente", "anoche", "enseguida", "ahora", "mientras", "anteriormente", "bien", "mal", "regular", "despacio", "deprisa", "así", "tal", "como", "aprisa", "adrede", "peor", "mejor", "fielmente", "estupendamente", "fácilmente", "negativamente", "responsablemente", "muy", "poco", "mucho", "bastante", "más", "menos", "algo", "demasiado", "casi", "solo", "solamente", "tan", "tanto", "todo", "nada", "aproximadamente", "sí", "también", "cierto", "ciertamente", "efectivamente", "claro", "exacto", "obvio", "verdaderamente", "seguramente", "asimismo", "etc", "no", "jamás", "nunca", "tampoco", "primeramente", "últimamente", "quizás", "quizá", "acaso", "probablemente", "posiblemente", "seguramente", "tal", "vez", "puede", "puede", "ser", "a", "lo", "mejor", "cuándo", "cómo", "cuánto", "dónde", "solo", "solamente", "aún", "inclusive", "además", "únicamente", "incluso", "mismamente", "propiamente", "precisamente", "concretamente", "viceversa", "contrariamente", "siquiera", "consecuentemente"];
+
+// Helpers
 const existy = arg => arg != null;
 const isUpper = elem => upperList.indexOf(elem[0]) !== -1;
+const buildArray = obj =>
+  Object.keys(obj)
+    .reduce((res, key) => {
+      const e = {
+        name: key,
+        count: obj[key]
+      };
 
+      res.push(e);
+      return res;
+    }, []);
+
+const buildObject = arr =>
+  arr
+    .reduce((res, elem) => {
+      res[elem.name] = elem.count;
+      return res;
+    }, {});
+
+
+//////////// Parsers ////////////
+
+/**
+ * Returns an array of words from the news.
+ * @param news: Object. The props of the object must contain strings
+ */
 const parsedWords = news =>
   Object.keys(news)
     .map(e => news[e])
@@ -51,8 +80,50 @@ const parsedWords = news =>
     .map(e => e.includes('.') ? e[1].toLocaleLowerCase() + e.slice(2) : e)
     .filter(e => e.length);
 
-const getNames = news =>
-  news
+/**
+ * Return an array of words with a `count` prop with
+ * the appearance of the word
+ * @param names: Array
+ */
+const getWordsCount = names =>
+  buildArray(names
+    .reduce((res, e) => {
+      if (res.hasOwnProperty(e)) {
+        res[e] = res[e] + 1;
+      }
+
+      if (!res.hasOwnProperty(e)) {
+        res[e] = 1;
+      }
+
+      return res;
+    }, {}))
+    .sort((a, b) => a.count > b.count)
+    .reverse();
+
+/**
+ * Return an array of words when the is more than
+ * one appearance and there are no words from the
+ * skipped list
+ * @param names: Array
+ */
+const getRelevantWordsCount = names =>
+  names
+    .filter(elem => elem.count !== 1)
+    .filter(e => skippedWords.indexOf(e.name) === -1)
+    .sort((a, b) => a.count > b.count)
+    .reverse();
+
+/**
+ * Returns an array of proper nouns from the list of words.
+ * Any word that starts with an uppercase will appear on the list
+ * except from the ones that start a sentence which are removed
+ * in the parsedWords fn.
+ * TODO: Should probably not do that. Could be considered a side effect
+ * @param names: Array
+ */
+const getNames = names =>
+  names
     .reduce((res, e, i, arr) => {
       if (isUpper(e) && existy(arr[i - 1]) && !isUpper(arr[i - 1])) {
         res.push(e);
@@ -67,6 +138,11 @@ const getNames = news =>
       return res;
     }, []);
 
+/**
+ * Returns and object with proper nouns and
+ * the number of appearances of each
+ * @param names: Array
+ */
 const getNamesCount = names =>
   names
     .reduce((res, e) => {
@@ -83,33 +159,24 @@ const getNamesCount = names =>
       return res;
     }, {});
 
-const buildArray = obj =>
-  Object.keys(obj)
-    .reduce((res, key) => {
-      const e = {
-        name: key,
-        count: obj[key]
-      };
-
-      res.push(e);
-      return res;
-    }, []);
-
+/**
+ * Receives an object with the form [word]: [word count]
+ * and returns an array of words with more than
+ * one appearance.
+ * @param names
+ */
 const getRelevantNames = names =>
   buildArray(names)
     .filter(elem => elem.count !== 1)
-    .sort((a, b) => a.count < b.count)
-    .reduce((res, elem) => {
-      res[elem.name] = elem.count;
-      return res;
-    }, {});
+    .sort((a, b) => a.count > b.count)
+    .reverse();
 
-const namesPagina = getNames(parsedWords(test1));
-const relevantNamesCountPagina = getRelevantNames(getNamesCount(namesPagina));
-
-const namesLN = getNames(parsedWords(test2));
-const relevantNamesCountLN = getRelevantNames(getNamesCount(namesLN));
-
+/**
+ * Returns an object of the form [word]: [word appearance percentage]
+ * with percentage of how important the word is according to the number
+ * of times it appears on the article.
+ * @param names
+ */
 const appearancePercentage = names =>
   buildArray(names)
     .reduce((res, elem) => {
@@ -122,7 +189,20 @@ const appearancePercentage = names =>
       return res;
     }, {});
 
-console.log(appearancePercentage(relevantNamesCountPagina));
-console.log(appearancePercentage(relevantNamesCountLN));
+
+
+const namesPagina = getNamesCount(getNames(parsedWords(test1)));
+const relevantNamesCountPagina = getRelevantNames(namesPagina);
+
+console.log(relevantNamesCountPagina)
+
+const namesLN = getNames(parsedWords(test2));
+const relevantNamesCountLN = getRelevantNames(getNamesCount(namesLN));
+
+// console.log(JSON.stringify(relevantNamesCountPagina, null, 2))
+// console.log(JSON.stringify(relevantNamesCountLN, null, 2))
+
+// console.log(appearancePercentage(relevantNamesCountPagina));
+// console.log(appearancePercentage(relevantNamesCountLN));
 
 // need to filter repeated words like mi -> mi sangre, lodoño -> lopez lodoño

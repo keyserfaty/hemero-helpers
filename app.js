@@ -42,6 +42,8 @@ const buildObject = arr =>
       return res;
     }, {});
 
+const abs = x => x < 0 ? -x : x;
+
 ////////////////////////////////////////////////////////////////////////
 // Parsers /////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -240,22 +242,55 @@ const extractEquals = (a, b) =>
       return res;
     }, []);
 
-// const buildSimilarityIndex = list =>
-//   list.
+/**
+ * Its kind of a lying function but here's what it does:
+ * Up to this point you have an array with n elements.
+ * Each element is an array of words that refer to the same word.
+ * For example you could have:
+ * ['cristina', 'cristina kirchner', 'CFK']
+ *
+ * All these there words all virtually the same and for each of these
+ * groups you have a percentage. This percentage represents how
+ * important are this words to the main subject of the article.
+ * You could have for example a 21.44 (this is a big number).
+ *
+ * On the other hand you will have the other article from a different journal
+ * and the same data: ['cristina', 'cristina kirchner', 'CFK'] maybe in a different
+ * order or with some additions. You could have for instance
+ * ['cristina', 'cristina kirchner', 'CFK', 'cristina fernandez de kirchner'] and with
+ * this list you will also have how important this word (or group of words)
+ * are for these other article. You could have a 18.22.
+ *
+ * What the function does is it takes this two values (18.22 and 21.44) and it
+ * subtracts on an other an then returns the absolute value of these operation.
+ * In this case this would be: 3.22.
+ *
+ * It will do this for all group of words you have. So you finally will end up with
+ * a group of numbers: 3.22, 2.33, 8.22.
+ * It will then take the biggest one and will subtract 100 to it and the return its absolute
+ * number. In this case: 100 - 8.22 = 91.78 and this is the number it will return.
+ *
+ * This number is suppose to be the similarity index of both articles.
+ *
+ * @param list
+ */
+const buildSimilarityIndex = list =>
+  abs(list
+    .reduce((res, e) => {
+      const firstPercentage = e[0].percentage;
+      const secondPercentage = e[1].percentage;
+      
+      const diffPercentage = abs(firstPercentage - secondPercentage);
+
+      res.push(diffPercentage);
+      return res;
+    }, [])
+    .reduce((prev, curr) => prev > curr ? prev : curr)
+    - 100
+  ).toFixed(2);
 
 const pagina = filterMostRelevant(getRelevantNames(wordsP), 3);
 const LN = filterMostRelevant(getRelevantNames(wordsLN), 3);
-console.log(extractEquals(pagina, LN))
-console.log('-------------')
-// console.log(extractEquals(filterMostRelevant(getRelevantNames(wordsLN), 3)))
+console.log(buildSimilarityIndex(extractEquals(pagina, LN)))
 
-// console.log(JSON.stringify(
-//   appearancePercentage(getRelevantNames(wordsP)), null, 2
-// ));
-// console.log(JSON.stringify(
-//   appearancePercentage(getRelevantNames(wordsLN)), null, 2
-// ));
-
-// console.log(JSON.stringify(getRelevantNames(wordsP), null, 2));
-// console.log(JSON.stringify(getRelevantNames(wordsLN), null, 2));
 

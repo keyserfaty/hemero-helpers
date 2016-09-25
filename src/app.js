@@ -1,5 +1,5 @@
 import { abs, buildArray, existy, isUpper } from './helpers';
-import { testLN1, testPagina1 } from './dataSets';
+import { testLN1, testPagina1, testLN2, testPagina2 } from './dataSets';
 
 /**
  * Returns an array of words from the news.
@@ -12,8 +12,23 @@ const parsedWords = news =>
     .join()
     .split(new RegExp('\"|,|-|›| '))
     .map(e => e.trim())
-    // BUG: It should remove `.` and convert any word following a period to lowercase
-    .map(e => e.includes('.') ? e.toLowerCase() : e)
+    .map((e, i, arr) => {
+      // Change words that begin a sentence to lowercase if
+      // it has a period and is not a number
+      if (e.includes('.') && isNaN(Number(e[0]))) {
+        const res = e
+          .concat(arr[i + 1])
+          .split('.')
+          .filter(e => e.length)
+          .map((e, i) => i !== 0 ? e.toLowerCase() : e);
+
+        arr.splice(i + 1, 1);
+        return res;
+      }
+      return e;
+    })
+    .join()
+    .split(',')
     .filter(e => e.length);
 
 const wordsP = parsedWords(testPagina1);
@@ -244,12 +259,15 @@ const buildSimilarityIndex = list =>
     - 100
   ).toFixed(2);
 
-const pagina = filterMostRelevant(getRelevantNames(wordsP), 3);
-const LN = filterMostRelevant(getRelevantNames(wordsLN), 3);
-// console.log(extractEquals(pagina, LN))
+const pagina = getRelevantNames(wordsP);
+const LN = getRelevantNames(wordsLN);
 
-// console.log(getNamesCount(wordsP))
-// console.log('------------------------------------')
-// console.log(getNamesCount(wordsLN))
+// const pagina = filterMostRelevant(getRelevantNames(wordsP), 3);
+// const LN = filterMostRelevant(getRelevantNames(wordsLN), 3);
+// console.log(JSON.stringify(extractEquals(pagina, LN), null, 2))
+
+console.log(JSON.stringify(pagina, null, 2))
+console.log('------------------------------------')
+console.log(JSON.stringify(LN, null, 2))
 
 
